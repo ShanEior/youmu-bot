@@ -6,6 +6,7 @@ from flask_cors import CORS
 from openpyxl.utils import column_index_from_string
 from werkzeug.utils import secure_filename
 
+from services.cable_converter import build_preview_rows
 from services.column_detector import detect_columns
 from services.excel_reader import read_workbook
 
@@ -45,12 +46,19 @@ def build_parse_result(file_path):
         matched_columns = detection["matched_columns"]
         header_row = detection["header_row"]
         valid = detection["valid"]
-
         source_preview_rows = []
+        converted_preview_rows = []
+
         if valid:
             source_preview_rows = build_source_preview_rows(rows, header_row, matched_columns)
             if source_preview_rows:
                 valid_sheet_count += 1
+                converted_preview_rows, preview_warnings = build_preview_rows(
+                    source_preview_rows,
+                    matched_columns,
+                    limit=20,
+                )
+                warnings.extend(f"Sheet {sheet['sheet_name']}：{warning}" for warning in preview_warnings)
             else:
                 valid = False
                 warnings.append(f"Sheet {sheet['sheet_name']} 未识别到有效数据行")
@@ -64,7 +72,7 @@ def build_parse_result(file_path):
             "row_count": len(source_preview_rows),
             "matched_columns": matched_columns,
             "source_preview_rows": source_preview_rows[:20],
-            "converted_preview_rows": [],
+            "converted_preview_rows": converted_preview_rows,
         })
 
     errors = []

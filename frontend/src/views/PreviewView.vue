@@ -62,7 +62,9 @@
         <el-table :data="sheet.converted_preview_rows || []" border size="small" empty-text="暂无转换结果预览">
           <el-table-column prop="net" label="Net 编号" width="120" />
           <el-table-column prop="sub" label="Sub 编号" width="120" />
-          <el-table-column prop="connection" label="连接关系" min-width="240" />
+          <el-table-column prop="start" label="起点" min-width="160" />
+          <el-table-column prop="end" label="终点" min-width="160" />
+          <el-table-column prop="remark" label="备注" min-width="120" />
         </el-table>
       </el-card>
 

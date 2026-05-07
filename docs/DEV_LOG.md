@@ -30,20 +30,22 @@
 - 已实现合并单元格填充处理，用于补齐跨行的起点/终点插件等数据。
 - 已实现表头行自动识别和起点/终点插件、针脚、内容、信号性质、备注字段识别。
 - 已实现上传后的原始数据预览，`source_preview_rows` 返回前 20 条有效数据。
+- 已实现连接器名称标准化、针脚拆分与清洗。
+- 已实现上传解析后的转换预览生成，`converted_preview_rows` 返回 Net/Sub、起点、终点和备注，并在针脚数量不一致时返回 warnings。
 - 已添加 `.gitignore`，忽略 `node_modules/`、构建产物、Python 缓存和上传/输出目录内容，并通过 `.gitkeep` 保留目录。
 
 ## 下一步计划
 
-- 实现连接器名称标准化和针脚拆分。
-- 生成转换结果预览数据。
+- 实现真实 convert 接口，生成 Excel 编程表文件。
+- 实现真实结果文件下载。
 - 根据样例文件验证解析与转换结果。
 
 ## 注意事项
 
-- 当前已实现真实 Excel 读取、合并单元格处理、字段识别和原始数据预览。
-- 当前仍未实现真实转换、转换预览和 Excel 导出业务逻辑。
+- 当前已实现真实 Excel 读取、合并单元格处理、字段识别、原始数据预览和转换预览。
+- 当前仍未实现真实转换文件导出和真实结果文件下载。
 - 转换完成页面当前展示的是 `sessionStorage.convert_result` 中的 mock 数据。
 - `POST /api/files/upload` 已返回真实 Excel 解析结果和原始数据预览。
 - `POST /api/files/convert` 返回的是 mock 转换结果。
 - `GET /api/files/download/<output_file_id>` 暂不生成真实 Excel，仅返回 JSON 提示。
-- `backend/services/` 下文件均为占位文件，仅用于后续开发承接。
+- `backend/services/` 下连接器标准化、针脚拆分、转换预览生成逻辑已落地，真实 Excel 导出仍未实现。
