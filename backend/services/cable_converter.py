@@ -61,11 +61,6 @@ def build_rows(source_rows, matched_columns, limit=None):
 
 
 def is_footer_or_note_row(row):
-    start_connector = normalize_connector(row.get("start_connector"))
-    end_connector = normalize_connector(row.get("end_connector"))
-    if start_connector or end_connector:
-        return False
-
     texts = []
     for value in row.values():
         text = str(value or "").strip()
