@@ -1,15 +1,18 @@
 <template>
   <div class="result-page">
-    <el-card v-if="!convertResult">
+    <el-card v-if="!convertResult" class="result-card" shadow="never">
       <el-empty description="暂无转换结果，请先上传并转换文件">
         <el-button type="primary" @click="goUpload">返回上传页</el-button>
       </el-empty>
     </el-card>
 
-    <el-card v-else>
+    <el-card v-else class="result-card" shadow="never">
       <template #header>
         <div class="card-header">
-          <h2>转换完成</h2>
+          <div>
+            <h2>转换完成</h2>
+            <p class="card-description">编程表已生成，可直接下载结果文件，或返回重新上传新的 Excel。</p>
+          </div>
         </div>
       </template>
 
@@ -32,13 +35,14 @@
 
       <el-result icon="success" title="转换成功" sub-title="已生成真实 Excel 文件，可直接下载结果" />
 
-      <el-descriptions :column="1" border>
-        <el-descriptions-item label="输出文件">{{ convertResult.output_filename }}</el-descriptions-item>
-      </el-descriptions>
+      <div class="result-summary">
+        <span class="summary-label">输出文件名</span>
+        <strong class="summary-value">{{ convertResult.output_filename }}</strong>
+      </div>
 
       <div class="actions">
-        <el-button type="primary" :loading="loading" @click="handleDownload">下载结果</el-button>
-        <el-button :disabled="loading" @click="resetAndUpload">重新上传</el-button>
+        <el-button type="primary" size="large" :loading="loading" @click="handleDownload">下载结果</el-button>
+        <el-button size="large" :disabled="loading" @click="resetAndUpload">重新上传</el-button>
       </div>
     </el-card>
   </div>
@@ -115,6 +119,12 @@ async function handleDownload() {
   width: 100%;
 }
 
+.result-card {
+  width: 100%;
+  border: none;
+  border-radius: 18px;
+}
+
 .card-header {
   display: flex;
   align-items: center;
@@ -123,16 +133,47 @@ async function handleDownload() {
 
 .card-header h2 {
   margin: 0;
+  font-size: 24px;
+  color: #303133;
+}
+
+.card-description {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #606266;
 }
 
 .message-alert {
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.result-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #ebeef5;
+}
+
+.summary-label {
+  font-size: 13px;
+  color: #909399;
+}
+
+.summary-value {
+  font-size: 18px;
+  color: #303133;
+  word-break: break-all;
 }
 
 .actions {
   display: flex;
   justify-content: center;
   gap: 12px;
-  margin-top: 24px;
+  margin-top: 28px;
 }
 </style>

@@ -1,8 +1,11 @@
 <template>
-  <el-card class="upload-card">
+  <el-card class="upload-card" shadow="never">
     <template #header>
       <div class="card-header">
-        <h2>上传 Excel 文件</h2>
+        <div>
+          <h2>上传 Excel 文件</h2>
+          <p class="card-description">支持拖拽或选择线缆测试表文件，解析后进入预览页面核对转换结果。</p>
+        </div>
       </div>
     </template>
 
@@ -15,30 +18,34 @@
       :closable="false"
     />
 
-    <el-upload
-      drag
-      action="#"
-      accept=".xlsx,.xls"
-      :auto-upload="false"
-      :limit="1"
-      :file-list="fileList"
-      :on-change="handleFileChange"
-      :on-remove="handleFileRemove"
-      :on-exceed="handleFileExceed"
-    >
-      <div class="el-upload__text">拖拽 Excel 文件到此处，或<em>点击选择</em></div>
-      <template #tip>
-        <div class="el-upload__tip">仅支持 .xlsx 和 .xls 文件</div>
-      </template>
-    </el-upload>
+    <div class="upload-section">
+      <el-upload
+        drag
+        action="#"
+        accept=".xlsx,.xls"
+        :auto-upload="false"
+        :limit="1"
+        :file-list="fileList"
+        :on-change="handleFileChange"
+        :on-remove="handleFileRemove"
+        :on-exceed="handleFileExceed"
+      >
+        <div class="upload-text">拖拽 Excel 文件到此处，或<em>点击选择</em></div>
+        <template #tip>
+          <div class="upload-tip">仅支持 .xlsx 和 .xls 文件</div>
+        </template>
+      </el-upload>
+    </div>
 
-    <div v-if="selectedFile" class="selected-file">
-      已选择文件：{{ selectedFile.name }}
+    <div class="file-summary">
+      <span class="file-summary-label">当前文件</span>
+      <span class="file-summary-name">{{ selectedFile ? selectedFile.name : '尚未选择文件' }}</span>
     </div>
 
     <div class="actions">
       <el-button
         type="primary"
+        size="large"
         :loading="loading"
         :disabled="!selectedFile || loading"
         @click="handleStartParse"
@@ -128,6 +135,8 @@ async function handleStartParse() {
 <style scoped>
 .upload-card {
   width: 100%;
+  border: none;
+  border-radius: 18px;
 }
 
 .card-header {
@@ -138,20 +147,59 @@ async function handleStartParse() {
 
 .card-header h2 {
   margin: 0;
-  font-size: 20px;
+  font-size: 24px;
+  color: #303133;
 }
 
-.upload-alert {
-  margin-bottom: 16px;
-}
-
-.selected-file {
-  margin-top: 16px;
+.card-description {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
   color: #606266;
 }
 
+.upload-alert {
+  margin-bottom: 20px;
+}
+
+.upload-section {
+  margin-bottom: 20px;
+}
+
+.upload-text {
+  font-size: 15px;
+  color: #606266;
+}
+
+.upload-tip {
+  margin-top: 8px;
+  color: #909399;
+}
+
+.file-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #ebeef5;
+}
+
+.file-summary-label {
+  font-size: 13px;
+  color: #909399;
+}
+
+.file-summary-name {
+  font-size: 15px;
+  color: #303133;
+  word-break: break-all;
+}
+
 .actions {
-  margin-top: 24px;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  margin-top: 28px;
 }
 </style>
