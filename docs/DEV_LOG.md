@@ -19,10 +19,13 @@
 - 已配置基础路由：`/upload`、`/preview`、`/result`，根路径 `/` 重定向到 `/upload`。
 - 已创建上传、解析预览、转换完成三个页面占位。
 - 已创建 `frontend/src/api/fileApi.js`，封装后端接口方法占位。
+- 已完成上传页面 UI，支持选择或拖拽 `.xlsx` / `.xls` 文件。
+- 已完成上传页面与后端 `POST /api/files/upload` mock 接口联调。
+- 上传成功后会将后端 mock 解析结果保存到 `sessionStorage.upload_result` 并跳转 `/preview`。
 
 ## 下一步计划
 
-- 实现上传页面与后端 `POST /api/files/upload` mock 接口联调。
+- 实现解析预览页面展示 `upload_result`。
 - 设计后端 Excel 读取、合并单元格处理、字段识别、连接器标准化、针脚拆分、转换和导出模块。
 - 补充前后端接口联调。
 - 根据样例文件验证解析与转换结果。
@@ -30,7 +33,7 @@
 ## 注意事项
 
 - 当前仍是 mock 阶段，不实现真实 Excel 解析、转换、导出业务逻辑。
-- 前端当前仅包含基础页面占位和路由，不实现完整上传 UI。
+- 上传页面当前使用后端 mock 解析结果。
 - `POST /api/files/upload` 返回的是 mock 解析结果。
 - `POST /api/files/convert` 返回的是 mock 转换结果。
 - `GET /api/files/download/<output_file_id>` 暂不生成真实 Excel，仅返回 JSON 提示。
