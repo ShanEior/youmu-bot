@@ -30,7 +30,10 @@ def read_workbook(file_path):
     try:
         sheets = []
 
-        for worksheet in workbook.worksheets:
+        for sheet_index, worksheet in enumerate(workbook.worksheets):
+            if sheet_index == 0:
+                continue
+
             data = read_sheet_data(worksheet)
             sheets.append({
                 "sheet_name": worksheet.title,
