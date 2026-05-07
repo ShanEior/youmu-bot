@@ -14,10 +14,15 @@
   - `GET /api/files/download/<output_file_id>`
 - 已接入 Flask-CORS，允许前端跨域访问。
 - 已实现上传文件基础校验、文件名安全处理和保存到 `backend/uploads/`。
+- 已完成前端 Vue 3 + Vite 项目初始化。
+- 已声明前端依赖：`vue`、`vite`、`element-plus`、`axios`、`vue-router`。
+- 已配置基础路由：`/upload`、`/preview`、`/result`，根路径 `/` 重定向到 `/upload`。
+- 已创建上传、解析预览、转换完成三个页面占位。
+- 已创建 `frontend/src/api/fileApi.js`，封装后端接口方法占位。
 
 ## 下一步计划
 
-- 初始化前端项目骨架，基于 Vue 3 + Element Plus 搭建上传、预览、结果页面。
+- 实现上传页面与后端 `POST /api/files/upload` mock 接口联调。
 - 设计后端 Excel 读取、合并单元格处理、字段识别、连接器标准化、针脚拆分、转换和导出模块。
 - 补充前后端接口联调。
 - 根据样例文件验证解析与转换结果。
@@ -25,6 +30,7 @@
 ## 注意事项
 
 - 当前仍是 mock 阶段，不实现真实 Excel 解析、转换、导出业务逻辑。
+- 前端当前仅包含基础页面占位和路由，不实现完整上传 UI。
 - `POST /api/files/upload` 返回的是 mock 解析结果。
 - `POST /api/files/convert` 返回的是 mock 转换结果。
 - `GET /api/files/download/<output_file_id>` 暂不生成真实 Excel，仅返回 JSON 提示。
