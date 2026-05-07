@@ -1,10 +1,25 @@
+from pathlib import Path
+
 from openpyxl import load_workbook
 
 from .merged_cell_handler import fill_merged_cells
 
 
+class ExcelReadError(Exception):
+    pass
+
+
 def read_workbook(file_path):
-    workbook = load_workbook(file_path, data_only=True, read_only=False)
+    path = Path(file_path)
+    suffix = path.suffix.lower()
+
+    if suffix == ".xls":
+        raise ExcelReadError("当前 MVP 暂不支持 .xls，请转换为 .xlsx 后上传")
+
+    if suffix != ".xlsx":
+        raise ExcelReadError(f"不支持的 Excel 文件格式: {suffix or 'unknown'}")
+
+    workbook = load_workbook(path, data_only=True, read_only=False)
     sheets = []
 
     for worksheet in workbook.worksheets:

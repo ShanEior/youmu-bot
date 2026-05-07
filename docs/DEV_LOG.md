@@ -33,6 +33,10 @@
 - 已实现连接器名称标准化、针脚拆分与清洗。
 - 已实现真实 Excel 导出和真实结果文件下载，`POST /api/files/convert` 会生成 `.xlsx`，`GET /api/files/download/<output_file_id>` 返回真实文件。
 - 已完成结果页真实下载联调，下载按钮会触发浏览器保存导出的 Excel 文件。
+- 已修复上传 Excel 时读取失败的问题：根因是后端允许 `.xls` 进入 `openpyxl` 读取，且 upload 接口吞掉了异常细节。
+- 已将 `backend/services/excel_reader.py` 调整为仅用 `openpyxl.load_workbook(..., data_only=True, read_only=False)` 读取 `.xlsx`，并对 `.xls` 返回明确的 MVP 暂不支持错误。
+- 已在 `POST /api/files/upload` 中增加 traceback 输出、结构化 `errors` 返回，以及上传后文件存在性校验。
+- 已补充上传保存文件名回退逻辑：当 `secure_filename(...)` 结果为空或异常时，使用 `file_id + 原扩展名` 保存，避免中文文件名导致路径异常。
 
 ## 下一步计划
 
@@ -44,7 +48,8 @@
 - 当前已实现真实 Excel 读取、合并单元格处理、字段识别、原始数据预览、转换预览、真实 Excel 导出和真实下载。
 - 当前输出文件仅包含基础表头、转换数据和简单列宽，复杂样式与特殊接地片/接外壳完整规则仍待优化。
 - 转换完成页面当前展示的是 `sessionStorage.convert_result` 中的真实转换结果。
-- `POST /api/files/upload` 已返回真实 Excel 解析结果和原始数据预览。
+- `POST /api/files/upload` 已返回真实 Excel 解析结果和原始数据预览；读取失败时会返回包含 detail 的 `errors`，并在后端控制台打印 traceback。
+- 当前 MVP 暂不支持 `.xls` 读取，请先转换为 `.xlsx` 后上传。
 - `POST /api/files/convert` 已生成真实 Excel 编程表文件。
 - `GET /api/files/download/<output_file_id>` 已返回真实 Excel 文件。
 - `backend/services/` 下已落地连接器标准化、针脚拆分、转换预览、真实导出逻辑。

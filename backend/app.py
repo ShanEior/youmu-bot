@@ -1,5 +1,6 @@
 from pathlib import Path
 from uuid import uuid4
+import traceback
 
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
@@ -8,7 +9,7 @@ from werkzeug.utils import secure_filename
 
 from services.cable_converter import build_all_rows, build_preview_rows
 from services.column_detector import detect_columns
-from services.excel_reader import read_workbook
+from services.excel_reader import ExcelReadError, read_workbook
 from services.excel_writer import write_converted_workbook
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -35,6 +36,18 @@ def generate_file_id(filename):
 def build_output_filename(filename):
     path = Path(filename)
     return f"{path.stem}编程表.xlsx"
+
+
+def build_saved_filename(file_id, original_filename):
+    original_path = Path(original_filename)
+    suffix = original_path.suffix.lower()
+    safe_filename = secure_filename(original_filename)
+    safe_path = Path(safe_filename) if safe_filename else None
+
+    if safe_path and safe_path.stem and safe_path.suffix.lower() == suffix:
+        return f"{Path(file_id).stem}_{safe_filename}"
+
+    return f"{Path(file_id).stem}{suffix}"
 
 
 def build_parse_result(file_path):
@@ -131,6 +144,13 @@ def is_valid_source_row(row):
     return has_connector and has_pin
 
 
+def build_upload_error_response(message):
+    return jsonify({
+        "error": message,
+        "errors": [message],
+    }), 400
+
+
 @app.get("/api/health")
 def health_check():
     return jsonify({
@@ -152,16 +172,26 @@ def upload_file():
         return jsonify({"error": "仅支持 .xlsx 或 .xls 文件"}), 400
 
     original_filename = file.filename
-    safe_filename = secure_filename(original_filename)
-    file_id = generate_file_id(safe_filename)
-    saved_filename = f"{Path(file_id).stem}_{safe_filename}"
+    file_id = generate_file_id(original_filename)
+    saved_filename = build_saved_filename(file_id, original_filename)
     save_path = UPLOAD_DIR / saved_filename
     file.save(save_path)
 
+    if not save_path.exists():
+        return build_upload_error_response(f"Excel 文件保存失败: {save_path}")
+
     try:
         sheets, warnings, errors, parsed_sheets = build_parse_result(save_path)
-    except Exception:
-        return jsonify({"error": "Excel 文件读取失败，请检查文件格式是否正确"}), 400
+    except ExcelReadError as error:
+        message = str(error)
+        print(f"[upload_file] Excel 读取失败: {save_path}")
+        traceback.print_exc()
+        return build_upload_error_response(message)
+    except Exception as error:
+        message = f"Excel 文件读取失败: {error}"
+        print(f"[upload_file] Excel 读取失败: {save_path}")
+        traceback.print_exc()
+        return build_upload_error_response(message)
 
     uploaded_files[file_id] = {
         "filename": original_filename,
