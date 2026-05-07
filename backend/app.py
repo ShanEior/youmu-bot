@@ -3,7 +3,11 @@ from uuid import uuid4
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from openpyxl.utils import column_index_from_string
 from werkzeug.utils import secure_filename
+
+from services.column_detector import detect_columns
+from services.excel_reader import read_workbook
 
 BASE_DIR = Path(__file__).resolve().parent
 UPLOAD_DIR = BASE_DIR / "uploads"
@@ -28,6 +32,86 @@ def generate_file_id(filename):
 def build_output_filename(filename):
     path = Path(filename)
     return f"{path.stem}编程表.xlsx"
+
+
+def build_parse_result(file_path):
+    sheets = []
+    warnings = []
+    valid_sheet_count = 0
+
+    for sheet in read_workbook(file_path):
+        rows = sheet["data"]
+        detection = detect_columns(rows)
+        matched_columns = detection["matched_columns"]
+        header_row = detection["header_row"]
+        valid = detection["valid"]
+
+        source_preview_rows = []
+        if valid:
+            source_preview_rows = build_source_preview_rows(rows, header_row, matched_columns)
+            if source_preview_rows:
+                valid_sheet_count += 1
+            else:
+                valid = False
+                warnings.append(f"Sheet {sheet['sheet_name']} 未识别到有效数据行")
+        else:
+            warnings.append(f"Sheet {sheet['sheet_name']} 未识别到起点/终点插件和针脚关键字段")
+
+        sheets.append({
+            "sheet_name": sheet["sheet_name"],
+            "valid": valid,
+            "header_row": header_row,
+            "row_count": len(source_preview_rows),
+            "matched_columns": matched_columns,
+            "source_preview_rows": source_preview_rows[:20],
+            "converted_preview_rows": [],
+        })
+
+    errors = []
+    if valid_sheet_count == 0:
+        errors.append("未识别到有效 Sheet")
+
+    return sheets, warnings, errors
+
+
+def build_source_preview_rows(rows, header_row, matched_columns):
+    preview_rows = []
+    field_columns = {
+        field: column_index_from_string(column_letter) - 1
+        for field, column_letter in matched_columns.items()
+    }
+
+    for row in rows[header_row:]:
+        item = {
+            "start_connector": get_row_value(row, field_columns.get("start_connector")),
+            "start_pin": get_row_value(row, field_columns.get("start_pin")),
+            "start_content": get_row_value(row, field_columns.get("start_content")),
+            "end_connector": get_row_value(row, field_columns.get("end_connector")),
+            "end_pin": get_row_value(row, field_columns.get("end_pin")),
+            "end_content": get_row_value(row, field_columns.get("end_content")),
+            "signal_type": get_row_value(row, field_columns.get("signal_type")),
+            "remark": get_row_value(row, field_columns.get("remark")),
+        }
+
+        if is_valid_source_row(item):
+            preview_rows.append(item)
+
+        if len(preview_rows) >= 20:
+            break
+
+    return preview_rows
+
+
+def get_row_value(row, column_index):
+    if column_index is None or column_index >= len(row):
+        return ""
+    return row[column_index]
+
+
+def is_valid_source_row(row):
+    has_connector = bool(row["start_connector"] or row["end_connector"])
+    has_pin = bool(row["start_pin"] or row["end_pin"])
+    return has_connector and has_pin
 
 
 @app.get("/api/health")
@@ -63,47 +147,17 @@ def upload_file():
         "path": str(save_path),
     }
 
+    try:
+        sheets, warnings, errors = build_parse_result(save_path)
+    except Exception:
+        return jsonify({"error": "Excel 文件读取失败，请检查文件格式是否正确"}), 400
+
     return jsonify({
         "file_id": file_id,
         "filename": original_filename,
-        "sheets": [
-            {
-                "sheet_name": "Sheet1",
-                "header_row": 5,
-                "row_count": 3,
-                "matched_columns": {
-                    "start_connector": "A",
-                    "start_pin": "B",
-                    "start_content": "C",
-                    "end_connector": "D",
-                    "end_pin": "E",
-                    "end_content": "F",
-                    "signal_type": "G",
-                    "remark": "H",
-                },
-                "source_preview_rows": [
-                    {
-                        "start_connector": "PW01-X40(J30J-74TJSL7)",
-                        "start_pin": "45,63",
-                        "start_content": "电推控制器电源开指令",
-                        "end_connector": "PK09-X01(J30J-51ZKSL7)",
-                        "end_pin": "1,2",
-                        "end_content": "控制器电源开指令",
-                        "signal_type": "26#",
-                        "remark": "mock 数据",
-                    }
-                ],
-                "converted_preview_rows": [
-                    {
-                        "net": "Net1",
-                        "sub": "*Sub 1",
-                        "connection": "PW01_X40:45::PK09_X01:1",
-                    }
-                ],
-            }
-        ],
-        "warnings": ["当前为 mock 解析结果，尚未执行真实 Excel 解析"],
-        "errors": [],
+        "sheets": sheets,
+        "warnings": warnings,
+        "errors": errors,
     })
 
 
