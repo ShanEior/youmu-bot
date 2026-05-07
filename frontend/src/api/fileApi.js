@@ -24,5 +24,7 @@ export function convertFile(fileId) {
 }
 
 export function downloadFile(outputFileId) {
-  return apiClient.get(`/api/files/download/${outputFileId}`)
+  return apiClient.get(`/api/files/download/${outputFileId}`, {
+    responseType: 'blob',
+  })
 }

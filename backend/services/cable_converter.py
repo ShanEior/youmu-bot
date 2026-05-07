@@ -3,6 +3,18 @@ from .pin_parser import parse_pins
 
 
 def build_preview_rows(source_rows, matched_columns, limit=20):
+    preview_rows, warnings = build_rows(source_rows, matched_columns, limit=limit)
+    return preview_rows, warnings
+
+
+def build_all_rows(source_rows, matched_columns, warnings=None):
+    all_rows, collected_warnings = build_rows(source_rows, matched_columns)
+    if warnings is not None:
+        warnings.extend(collected_warnings)
+    return all_rows
+
+
+def build_rows(source_rows, matched_columns, limit=None):
     preview_rows = []
     warnings = []
     row_number = 1
@@ -36,7 +48,7 @@ def build_preview_rows(source_rows, matched_columns, limit=20):
             })
             row_number += 1
 
-            if len(preview_rows) >= limit:
+            if limit is not None and len(preview_rows) >= limit:
                 return preview_rows, warnings
 
     return preview_rows, warnings

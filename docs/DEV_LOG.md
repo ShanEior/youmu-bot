@@ -31,21 +31,20 @@
 - 已实现表头行自动识别和起点/终点插件、针脚、内容、信号性质、备注字段识别。
 - 已实现上传后的原始数据预览，`source_preview_rows` 返回前 20 条有效数据。
 - 已实现连接器名称标准化、针脚拆分与清洗。
-- 已实现上传解析后的转换预览生成，`converted_preview_rows` 返回 Net/Sub、起点、终点和备注，并在针脚数量不一致时返回 warnings。
-- 已添加 `.gitignore`，忽略 `node_modules/`、构建产物、Python 缓存和上传/输出目录内容，并通过 `.gitkeep` 保留目录。
+- 已实现真实 Excel 导出和真实结果文件下载，`POST /api/files/convert` 会生成 `.xlsx`，`GET /api/files/download/<output_file_id>` 返回真实文件。
+- 已完成结果页真实下载联调，下载按钮会触发浏览器保存导出的 Excel 文件。
 
 ## 下一步计划
 
-- 实现真实 convert 接口，生成 Excel 编程表文件。
-- 实现真实结果文件下载。
+- 优化转换规则和输出格式。
 - 根据样例文件验证解析与转换结果。
 
 ## 注意事项
 
-- 当前已实现真实 Excel 读取、合并单元格处理、字段识别、原始数据预览和转换预览。
-- 当前仍未实现真实转换文件导出和真实结果文件下载。
-- 转换完成页面当前展示的是 `sessionStorage.convert_result` 中的 mock 数据。
+- 当前已实现真实 Excel 读取、合并单元格处理、字段识别、原始数据预览、转换预览、真实 Excel 导出和真实下载。
+- 当前输出文件仅包含基础表头、转换数据和简单列宽，复杂样式与特殊接地片/接外壳完整规则仍待优化。
+- 转换完成页面当前展示的是 `sessionStorage.convert_result` 中的真实转换结果。
 - `POST /api/files/upload` 已返回真实 Excel 解析结果和原始数据预览。
-- `POST /api/files/convert` 返回的是 mock 转换结果。
-- `GET /api/files/download/<output_file_id>` 暂不生成真实 Excel，仅返回 JSON 提示。
-- `backend/services/` 下连接器标准化、针脚拆分、转换预览生成逻辑已落地，真实 Excel 导出仍未实现。
+- `POST /api/files/convert` 已生成真实 Excel 编程表文件。
+- `GET /api/files/download/<output_file_id>` 已返回真实 Excel 文件。
+- `backend/services/` 下已落地连接器标准化、针脚拆分、转换预览、真实导出逻辑。

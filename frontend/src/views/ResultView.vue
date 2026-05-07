@@ -10,7 +10,6 @@
       <template #header>
         <div class="card-header">
           <h2>转换完成</h2>
-          <el-tag type="warning">Mock 数据</el-tag>
         </div>
       </template>
 
@@ -31,7 +30,7 @@
         :closable="false"
       />
 
-      <el-result icon="success" title="转换成功" sub-title="当前为 mock 下载流程，暂不生成真实 Excel 文件" />
+      <el-result icon="success" title="转换成功" sub-title="已生成真实 Excel 文件，可直接下载结果" />
 
       <el-descriptions :column="1" border>
         <el-descriptions-item label="输出文件">{{ convertResult.output_filename }}</el-descriptions-item>
@@ -91,9 +90,20 @@ async function handleDownload() {
 
   try {
     const response = await downloadFile(convertResult.value.output_file_id)
-    downloadMessage.value = response.data?.message || 'mock 下载接口调用成功'
+    const blob = new Blob([response.data], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    })
+    const downloadUrl = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = downloadUrl
+    link.download = convertResult.value.output_filename || 'converted.xlsx'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(downloadUrl)
+    downloadMessage.value = '下载已开始，请检查浏览器下载内容'
   } catch (error) {
-    errorMessage.value = error.response?.data?.error || '下载失败，请检查后端服务是否正常运行'
+    errorMessage.value = '下载失败，请检查后端服务是否正常运行'
   } finally {
     loading.value = false
   }
