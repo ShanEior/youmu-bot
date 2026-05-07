@@ -4,7 +4,7 @@ import re
 PIN_SPLIT_PATTERN = re.compile(r"[,，]")
 WHITESPACE_PATTERN = re.compile(r"\s+")
 NUMERIC_RANGE_PATTERN = re.compile(r"^(\d+)(?:-|~|～|至)(\d+)$")
-NOTE_KEYWORDS = ("一一对应", "点一一对应")
+NOTE_KEYWORDS = ("一分", "点一分", "一一对应", "点一一对应")
 
 
 def parse_pins(value):

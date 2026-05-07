@@ -1,8 +1,10 @@
+import re
+
 from .connector_normalizer import normalize_connector
 from .pin_parser import parse_pins
 
 
-NOTE_KEYWORDS = ("一一对应", "点一一对应")
+NOTE_TEXT_PATTERN = re.compile(r"(?:的\d+点一分|一分[二三四]?|点一分|一一对应|点一一对应)")
 
 
 def build_preview_rows(source_rows, matched_columns, limit=20):
@@ -23,7 +25,9 @@ def build_rows(source_rows, matched_columns, limit=None):
     row_number = 1
 
     for index, source_row in enumerate(source_rows, start=1):
-        if is_footer_or_note_row(source_row):
+        note_text = get_note_row_text(source_row)
+        if note_text:
+            warnings.append(f"第 {index} 条数据跳过说明行：{note_text}")
             continue
 
         start_connector = normalize_connector(source_row.get("start_connector"))
@@ -64,14 +68,18 @@ def build_rows(source_rows, matched_columns, limit=None):
     return preview_rows, warnings
 
 
-def is_footer_or_note_row(row):
+def get_note_row_text(row):
     texts = []
     for value in row.values():
         text = str(value or "").strip()
         if text:
             texts.append(text)
 
-    return any(keyword in text for text in texts for keyword in NOTE_KEYWORDS)
+    joined_text = " ".join(texts)
+    if NOTE_TEXT_PATTERN.search(joined_text):
+        return joined_text
+
+    return ""
 
 
 def format_endpoint(connector, pin):
