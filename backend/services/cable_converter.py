@@ -28,6 +28,8 @@ def build_rows(source_rows, matched_columns, limit=None):
 
         start_connector = normalize_connector(source_row.get("start_connector"))
         end_connector = normalize_connector(source_row.get("end_connector"))
+        start_pin_text = str(source_row.get("start_pin") or "").strip()
+        end_pin_text = str(source_row.get("end_pin") or "").strip()
         start_pins = parse_pins(source_row.get("start_pin"))
         end_pins = parse_pins(source_row.get("end_pin"))
         remark = source_row.get("remark", "")
@@ -40,11 +42,13 @@ def build_rows(source_rows, matched_columns, limit=None):
             warnings.append(f"第 {index} 条预览数据缺少可配对的起点或终点针脚，已跳过")
             continue
 
-        pair_count = min(len(start_pins), len(end_pins))
         if len(start_pins) != len(end_pins):
-            warnings.append(f"第 {index} 条预览数据起点/终点针脚数量不一致，已按较短数量生成")
+            warnings.append(
+                f"第 {index} 条数据跳过多对一/数量不一致行：起点针脚 {start_pin_text}，终点针脚 {end_pin_text}"
+            )
+            continue
 
-        for pair_index in range(pair_count):
+        for pair_index in range(len(start_pins)):
             preview_rows.append({
                 "net": f"Net{row_number}",
                 "sub": f"*Sub {row_number}",
