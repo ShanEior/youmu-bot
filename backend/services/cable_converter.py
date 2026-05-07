@@ -2,6 +2,9 @@ from .connector_normalizer import normalize_connector
 from .pin_parser import parse_pins
 
 
+NOTE_KEYWORDS = ("一一对应", "点一一对应")
+
+
 def build_preview_rows(source_rows, matched_columns, limit=20):
     preview_rows, warnings = build_rows(source_rows, matched_columns, limit=limit)
     return preview_rows, warnings
@@ -20,6 +23,9 @@ def build_rows(source_rows, matched_columns, limit=None):
     row_number = 1
 
     for index, source_row in enumerate(source_rows, start=1):
+        if is_footer_or_note_row(source_row):
+            continue
+
         start_connector = normalize_connector(source_row.get("start_connector"))
         end_connector = normalize_connector(source_row.get("end_connector"))
         start_pins = parse_pins(source_row.get("start_pin"))
@@ -52,6 +58,21 @@ def build_rows(source_rows, matched_columns, limit=None):
                 return preview_rows, warnings
 
     return preview_rows, warnings
+
+
+def is_footer_or_note_row(row):
+    start_connector = normalize_connector(row.get("start_connector"))
+    end_connector = normalize_connector(row.get("end_connector"))
+    if start_connector or end_connector:
+        return False
+
+    texts = []
+    for value in row.values():
+        text = str(value or "").strip()
+        if text:
+            texts.append(text)
+
+    return any(keyword in text for text in texts for keyword in NOTE_KEYWORDS)
 
 
 def format_endpoint(connector, pin):

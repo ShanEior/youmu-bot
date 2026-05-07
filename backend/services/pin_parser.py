@@ -3,6 +3,7 @@ import re
 
 PIN_SPLIT_PATTERN = re.compile(r"[,，]")
 WHITESPACE_PATTERN = re.compile(r"\s+")
+NUMERIC_RANGE_PATTERN = re.compile(r"^(\d+)(?:-|~|～|至)(\d+)$")
 
 
 def parse_pins(value):
@@ -13,8 +14,25 @@ def parse_pins(value):
     if not text:
         return []
 
-    return [
-        cleaned
-        for cleaned in (WHITESPACE_PATTERN.sub("", part) for part in PIN_SPLIT_PATTERN.split(text))
-        if cleaned
-    ]
+    pins = []
+    for part in PIN_SPLIT_PATTERN.split(text):
+        cleaned = WHITESPACE_PATTERN.sub("", part)
+        if not cleaned:
+            continue
+
+        pins.extend(expand_pin_token(cleaned))
+
+    return pins
+
+
+def expand_pin_token(token):
+    matched = NUMERIC_RANGE_PATTERN.fullmatch(token)
+    if not matched:
+        return [token]
+
+    start = int(matched.group(1))
+    end = int(matched.group(2))
+    if start > end:
+        return [token]
+
+    return [str(number) for number in range(start, end + 1)]

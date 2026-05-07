@@ -37,6 +37,10 @@
 - 已将 `backend/services/excel_reader.py` 调整为仅用 `openpyxl.load_workbook(..., data_only=True, read_only=False)` 读取 `.xlsx`，并对 `.xls` 返回明确的 MVP 暂不支持错误。
 - 已在 `POST /api/files/upload` 中增加 traceback 输出、结构化 `errors` 返回，以及上传后文件存在性校验。
 - 已补充上传保存文件名回退逻辑：当 `secure_filename(...)` 结果为空或异常时，使用 `file_id + 原扩展名` 保存，避免中文文件名导致路径异常。
+- 已修复真实 Excel 双行/分组表头无法识别的问题：根因是 `backend/services/column_detector.py` 之前要求单个单元格同时包含方向词和字段词，导致“起点/终点”与“插件/针脚”分两行时整张 Sheet 被判无效。
+- 已在 `backend/services/column_detector.py` 中保留单行识别逻辑，并增加相邻两行按列组合后的表头识别回退，兼容合并单元格展开后的分组表头。
+- 已新增针脚范围解析，支持 `1-74`、`1~74`、`1～74`、`1至74`，并兼容逗号混合范围如 `1~3,5,7-9`。
+- 已修复底部“1至74点一一对应”这类说明行误参与转换的问题：当行内缺少有效起点/终点连接器且文本包含“一一对应”时，转换阶段会直接跳过。
 
 ## 下一步计划
 
