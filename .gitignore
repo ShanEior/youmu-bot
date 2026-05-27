@@ -8,3 +8,26 @@ backend/outputs/*
 
 __pycache__/
 *.pyc
+
+# 运维/调试脚本（一次性，不应提交）
+_*.py
+check_*.py
+create_task.py
+debug_config.py
+deploy_*.py
+download_stickers.py
+emotion_tracker.py
+fix_*.py
+gather_info.py
+iterate_test.py
+iter_test_server.py
+memory_v3_deploy.py
+perception_heartbeat.py
+run_test.py
+test_*.py
+trigger_*.py
+update_agent.py
+upgrade_silence.py
+
+# profile-readme 是独立仓库
+profile-readme/
